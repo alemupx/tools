@@ -65,4 +65,29 @@ export class App {
       year: 'numeric',
     }).format(calculatedDate));
   }
+
+  protected diffStartDate = '';
+  protected diffEndDate = '';
+  protected readonly diffResult = signal<number | null>(null);
+  protected readonly diffError = signal<string | null>(null);
+
+  protected calculateDaysBetween(): void {
+    this.diffError.set(null);
+    this.diffResult.set(null);
+
+    if (!this.diffStartDate || !this.diffEndDate) {
+      this.diffError.set('Introduce ambas fechas para calcular la diferencia.');
+      return;
+    }
+
+    const [startYear, startMonth, startDay] = this.diffStartDate.split('-').map(Number);
+    const [endYear, endMonth, endDay] = this.diffEndDate.split('-').map(Number);
+    const start = new Date(startYear, startMonth - 1, startDay);
+    const end = new Date(endYear, endMonth - 1, endDay);
+
+    const msPerDay = 24 * 60 * 60 * 1000;
+    const days = Math.round((end.getTime() - start.getTime()) / msPerDay);
+
+    this.diffResult.set(Math.abs(days));
+  }
 }
