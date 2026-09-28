@@ -92,7 +92,7 @@ export class App {
   }
 
   protected diffWorkStartDate = '';
-  protected diffWorkEndDate = '';
+  protected diffWorkDays: number | null = null;
   protected readonly diffWorkResult = signal<number | null>(null);
   protected readonly diffWorkError = signal<string | null>(null);
 
@@ -100,24 +100,16 @@ export class App {
     this.diffWorkError.set(null);
     this.diffWorkResult.set(null);
 
-    if (!this.diffWorkStartDate || !this.diffWorkEndDate) {
-      this.diffWorkError.set('Introduce ambas fechas para calcular los días hábiles.');
+    if (!this.diffWorkStartDate || this.diffWorkDays === null || !Number.isInteger(this.diffWorkDays) || this.diffWorkDays < 0) {
+      this.diffWorkError.set('Introduce una fecha y un número entero de días igual o mayor que cero.');
       return;
     }
 
-    const [startYear, startMonth, startDay] = this.diffWorkStartDate.split('-').map(Number);
-    const [endYear, endMonth, endDay] = this.diffWorkEndDate.split('-').map(Number);
-    let start = new Date(startYear, startMonth - 1, startDay);
-    let end = new Date(endYear, endMonth - 1, endDay);
-
-    if (start > end) {
-      [start, end] = [end, start];
-    }
-
+    const [year, month, day] = this.diffWorkStartDate.split('-').map(Number);
+    const current = new Date(year, month - 1, day);
     let workDays = 0;
-    const current = new Date(start);
 
-    while (current < end) {
+    for (let i = 0; i < this.diffWorkDays; i++) {
       current.setDate(current.getDate() + 1);
       const dayOfWeek = current.getDay();
       if (dayOfWeek !== 0 && dayOfWeek !== 6) {

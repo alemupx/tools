@@ -111,8 +111,8 @@
             <input type="date" name="diffWorkStartDate" [(ngModel)]="diffWorkStartDate" required />
           </label>
           <label>
-            <span>Fecha de fin</span>
-            <input type="date" name="diffWorkEndDate" [(ngModel)]="diffWorkEndDate" required />
+            <span>Cantidad de días</span>
+            <input type="number" name="diffWorkDays" min="0" step="1" [(ngModel)]="diffWorkDays" required />
           </label>
         </div>
 
@@ -124,9 +124,9 @@
 
         @if (diffWorkResult() !== null) {
           <div class="result">
-            <span class="result-label">Días hábiles entre las fechas</span>
+            <span class="result-label">Días hábiles en ese período</span>
             <strong>{{ diffWorkResult() }}</strong>
-            <span class="result-detail">{{ diffWorkStartDate }} → {{ diffWorkEndDate }}</span>
+            <span class="result-detail">{{ diffWorkStartDate }} + {{ diffWorkDays }} día(s)</span>
           </div>
         }
       </form>
