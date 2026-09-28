@@ -90,4 +90,41 @@ export class App {
 
     this.diffResult.set(Math.abs(days));
   }
+
+  protected diffWorkStartDate = '';
+  protected diffWorkEndDate = '';
+  protected readonly diffWorkResult = signal<number | null>(null);
+  protected readonly diffWorkError = signal<string | null>(null);
+
+  protected calculateWorkDaysBetween(): void {
+    this.diffWorkError.set(null);
+    this.diffWorkResult.set(null);
+
+    if (!this.diffWorkStartDate || !this.diffWorkEndDate) {
+      this.diffWorkError.set('Introduce ambas fechas para calcular los días hábiles.');
+      return;
+    }
+
+    const [startYear, startMonth, startDay] = this.diffWorkStartDate.split('-').map(Number);
+    const [endYear, endMonth, endDay] = this.diffWorkEndDate.split('-').map(Number);
+    let start = new Date(startYear, startMonth - 1, startDay);
+    let end = new Date(endYear, endMonth - 1, endDay);
+
+    if (start > end) {
+      [start, end] = [end, start];
+    }
+
+    let workDays = 0;
+    const current = new Date(start);
+
+    while (current < end) {
+      current.setDate(current.getDate() + 1);
+      const dayOfWeek = current.getDay();
+      if (dayOfWeek !== 0 && dayOfWeek !== 6) {
+        workDays++;
+      }
+    }
+
+    this.diffWorkResult.set(workDays);
+  }
 }
