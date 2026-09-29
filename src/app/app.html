@@ -35,39 +35,6 @@
 
     <section class="calculator">
       <div class="intro">
-        <h1>Calendario de días laborables</h1>
-      </div>
-
-      <form class="date-form" (ngSubmit)="calculateWorkDate()">
-        <div class="fields">
-          <label>
-            <span>Fecha de inicio</span>
-            <input type="date" name="workStartDate" [(ngModel)]="workStartDate" required />
-          </label>
-          <label>
-            <span>Número de días laborables</span>
-            <input type="number" name="workDays" min="0" step="1" [(ngModel)]="workDays" required />
-          </label>
-        </div>
-
-        <button type="submit">Calcular fecha <span>→</span></button>
-
-        @if (workError()) {
-          <p class="message error">{{ workError() }}</p>
-        }
-
-        @if (workResult()) {
-          <div class="result">
-            <span class="result-label">Fecha resultante</span>
-            <strong>{{ workResult() }}</strong>
-            <span class="result-detail">{{ workStartDate }} + {{ workDays }} día(s) laborable(s)</span>
-          </div>
-        }
-      </form>
-    </section>
-
-    <section class="calculator">
-      <div class="intro">
         <h1>Calendario de diferencia de días</h1>
       </div>
 
@@ -111,22 +78,25 @@
             <input type="date" name="diffWorkStartDate" [(ngModel)]="diffWorkStartDate" required />
           </label>
           <label>
-            <span>Cantidad de días</span>
+            <span>Número de días hábiles</span>
             <input type="number" name="diffWorkDays" min="0" step="1" [(ngModel)]="diffWorkDays" required />
           </label>
         </div>
 
-        <button type="submit">Calcular días hábiles <span>→</span></button>
+        <button type="submit">Calcular fecha <span>→</span></button>
 
         @if (diffWorkError()) {
           <p class="message error">{{ diffWorkError() }}</p>
         }
 
-        @if (diffWorkResult() !== null) {
+        @if (diffWorkResult()) {
           <div class="result">
-            <span class="result-label">Días hábiles en ese período</span>
+            <span class="result-label">Fecha resultante</span>
             <strong>{{ diffWorkResult() }}</strong>
-            <span class="result-detail">{{ diffWorkStartDate }} + {{ diffWorkDays }} día(s)</span>
+            <span class="result-detail">{{ diffWorkStartDate }} + {{ diffWorkDays }} día(s) hábil(es), sin fines de semana ni feriados federales de EE. UU.</span>
+            @if (skippedHolidays().length) {
+              <span class="result-detail">Feriados saltados: {{ skippedHolidays().join(', ') }}</span>
+            }
           </div>
         }
       </form>

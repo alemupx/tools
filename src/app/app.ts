@@ -1,5 +1,6 @@
 import { Component, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { usHolidayOn } from './us-holidays';
 
 @Component({
   imports: [FormsModule],
@@ -33,39 +34,6 @@ export class App {
     }).format(calculatedDate));
   }
 
-  protected workStartDate = '';
-  protected workDays: number | null = null;
-  protected readonly workResult = signal<string | null>(null);
-  protected readonly workError = signal<string | null>(null);
-
-  protected calculateWorkDate(): void {
-    this.workError.set(null);
-    this.workResult.set(null);
-
-    if (!this.workStartDate || this.workDays === null || !Number.isInteger(this.workDays) || this.workDays < 0) {
-      this.workError.set('Introduce una fecha y un número entero de días laborables igual o mayor que cero.');
-      return;
-    }
-
-    const [year, month, day] = this.workStartDate.split('-').map(Number);
-    const calculatedDate = new Date(year, month - 1, day);
-    let remaining = this.workDays;
-
-    while (remaining > 0) {
-      calculatedDate.setDate(calculatedDate.getDate() + 1);
-      const dayOfWeek = calculatedDate.getDay();
-      if (dayOfWeek !== 0 && dayOfWeek !== 6) {
-        remaining--;
-      }
-    }
-
-    this.workResult.set(new Intl.DateTimeFormat('es-ES', {
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric',
-    }).format(calculatedDate));
-  }
-
   protected diffStartDate = '';
   protected diffEndDate = '';
   protected readonly diffResult = signal<number | null>(null);
@@ -93,30 +61,46 @@ export class App {
 
   protected diffWorkStartDate = '';
   protected diffWorkDays: number | null = null;
-  protected readonly diffWorkResult = signal<number | null>(null);
+  protected readonly diffWorkResult = signal<string | null>(null);
   protected readonly diffWorkError = signal<string | null>(null);
+  protected readonly skippedHolidays = signal<string[]>([]);
 
   protected calculateWorkDaysBetween(): void {
     this.diffWorkError.set(null);
     this.diffWorkResult.set(null);
+    this.skippedHolidays.set([]);
 
     if (!this.diffWorkStartDate || this.diffWorkDays === null || !Number.isInteger(this.diffWorkDays) || this.diffWorkDays < 0) {
-      this.diffWorkError.set('Introduce una fecha y un número entero de días igual o mayor que cero.');
+      this.diffWorkError.set('Introduce una fecha y un número entero de días hábiles igual o mayor que cero.');
       return;
     }
 
     const [year, month, day] = this.diffWorkStartDate.split('-').map(Number);
     const current = new Date(year, month - 1, day);
-    let workDays = 0;
+    const skipped: string[] = [];
+    const shortFormat = new Intl.DateTimeFormat('es-ES', { day: 'numeric', month: 'short', year: 'numeric' });
+    let remaining = this.diffWorkDays;
 
-    for (let i = 0; i < this.diffWorkDays; i++) {
+    while (remaining > 0) {
       current.setDate(current.getDate() + 1);
       const dayOfWeek = current.getDay();
-      if (dayOfWeek !== 0 && dayOfWeek !== 6) {
-        workDays++;
+      if (dayOfWeek === 0 || dayOfWeek === 6) {
+        continue;
       }
+      const holiday = usHolidayOn(current);
+      if (holiday) {
+        skipped.push(`${holiday.name} (${shortFormat.format(current)})`);
+        continue;
+      }
+      remaining--;
     }
 
-    this.diffWorkResult.set(workDays);
+    this.skippedHolidays.set(skipped);
+    this.diffWorkResult.set(new Intl.DateTimeFormat('es-ES', {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+    }).format(current));
   }
 }
